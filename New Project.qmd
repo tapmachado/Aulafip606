@@ -1,0 +1,80 @@
+---
+title: "Coffe Rust"
+author: Taís Machado
+date: 21-05-2025
+format: html
+warning: false
+message: false
+---
+
+# Apresentação
+
+O conjunto de dados sera o da ferrugem do café na Etiópia que está no arquivo de dados da nuvem.
+
+# Importa os dados
+
+Usaremos a função `gsheet2tbl ()` do pacote \[gsheet\] para carregar os dados no ambiente.
+
+```{r}
+library(gsheet)
+cr <- gsheet2tbl("https://docs.google.com/spreadsheets/d/1bq2N19DcZdtax2fQW9OHSGMR0X2__Z9T/edit?gid=1871397229#gid=1871397229")
+
+
+```
+
+# Visualizar os dados
+
+Usaremos a função `databble() do pacote [DT]`
+
+```{r}
+
+library(DT)
+datatable(cr)
+```
+
+# Gráficos
+
+```{r}
+
+library(tidyverse)
+library(ggplot2)
+library(ggthemes)
+library(prettymapr)
+library(ggspatial)
+library(rnaturalearth)
+library(rnaturalearthhires)
+remotes::install_github("ropensci/rnaturalearthhires")
+install.packages(
+  "rnaturalearthhires",
+  repos = "https://ropensci.r-universe.dev",
+  type = "source")
+
+library(sf)
+library(terra)
+
+ETH <- ne_states(country = "Ethiopia", returnclass = "sf")
+
+cr |> 
+  ggplot(aes(lon, lat)) +
+  geom_point()
+
+ggplot() +
+  geom_sf(data = ETH, fill = "white") +
+  geom_point(data = cr, aes(lon, lat, color = inc)) +
+  scale_color_viridis_c() +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  annotation_scale(location = "tl") +
+  annotation_north_arrow(location = "br", which_north = "true") +
+  labs(
+    title = "Ferrugem do café na Etiópia",
+    x = "Longitude",
+    y = "Latitude",
+    subtitle = "Levantamento em fazendas",
+    caption = "Fonte: Del Ponte et al. (2025)",
+    color = "Incidência (%)")
+
+ggsave("mapa_etiopia.png", plot = mapa, width = 10, height = 6)
+
+```
+
